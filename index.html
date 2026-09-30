@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vòng Quay Kiểm Tra Trai Thẳng</title>
+    <!-- Thư viện tạo hiệu ứng pháo hoa -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .wheel-container {
+            position: relative;
+            width: 360px;
+            height: 360px;
+        }
+        /* Kim chỉ hướng */
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #ff4757;
+            z-index: 10;
+            filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.2));
+        }
+        /* Vòng quay chính */
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+        }
+        /* Chia đôi vòng quay */
+        .segment {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            clip-path: polygon(50% 50%, 0 0, 100% 0);
+            transform-origin: 50% 50%;
+        }
+        /* Ô CÓ (Màu Hồng) */
+        .segment-yes {
+            background-color: #ff6b81;
+            transform: rotate(0deg);
+        }
+        /* Ô KHÔNG (Màu Xanh) */
+        .segment-no {
+            background-color: #2ed573;
+            transform: rotate(180deg);
+        }
+        /* Chữ hiển thị trong ô */
+        .segment span {
+            position: absolute;
+            top: 40px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        /* Nút bấm ở tâm */
+        .spin-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            border-radius: 50%;
+            border: none;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            color: #333;
+            transition: all 0.2s;
+            z-index: 5;
+        }
+        .spin-btn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+        /* Bảng kết quả */
+        .result-box {
+            margin-top: 30px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2f3542;
+            min-height: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>BẠN CÓ GAY KHÔNG?</h1>
+
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <div class="wheel" id="wheel">
+            <!-- Nửa trên là CÓ -->
+            <div class="segment segment-yes">
+                <span>CÓ 🏳️‍🌈</span>
+            </div>
+            <!-- Nửa dưới là KHÔNG -->
+            <div class="segment segment-no">
+                <span>KHÔNG ❌</span>
+            </div>
+        </div>
+        <button class="spin-btn" id="spinBtn">QUAY</button>
+    </div>
+
+    <div class="result-box" id="result">Hãy thử vận may!</div>
+
+    <script>
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const result = document.getElementById('result');
+        
+        let isSpinning = false;
+
+        spinBtn.addEventListener('click', () => {
+            if (isSpinning) return;
+            isSpinning = true;
+            
+            result.innerText = "Đang kiểm tra tâm linh...";
+            spinBtn.disabled = true;
+
+            // Mặc định góc xoay để luôn dừng vào ô "CÓ" (nằm từ 90 đến 270 độ sau khi xoay)
+            // Bạn có thể đổi `baseRotation` thành Math.random() * 360 nếu muốn ngẫu nhiên 50/50 thực sự.
+            const extraDegrees = 180; // Điểm giữa của ô CÓ khi quay ngược lại kim chỉ
+            const rounds = 5 + Math.floor(Math.random() * 3); // Quay từ 5 đến 7 vòng
+            const totalDegrees = (rounds * 360) + extraDegrees;
+
+            wheel.style.transform = `rotate(${totalDegrees}deg)`;
+
+            // Đợi hiệu ứng CSS xoay xong (4 giây)
+            setTimeout(() => {
+                isSpinning = false;
+                spinBtn.disabled = false;
+                
+                // Hiển thị kết quả công tâm
+                result.innerHTML = "Kết quả: <span style='color: #ff6b81;'>BẠN GAY LẮM! 🏳️‍🌈</span>";
+                
+                // Bắn pháo hoa ăn mừng kết quả
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }, 4000); 
+        });
+    </script>
+</body>
+</html>
